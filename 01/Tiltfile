@@ -1,0 +1,12 @@
+# Load necessary extensions for namespace management
+load('ext://namespace', 'namespace_create', 'namespace_inject')
+
+# Create the namespace named nginx if it doesn't exist
+namespace_create('nginx')
+
+# Deploy resources using Kustomize
+# Ensure you have a directory called 'kustomize' with your kustomization.yaml and other yaml files
+k8s_yaml(namespace_inject(kustomize('./kustomize'), 'nginx'))
+
+# Define the resource for Tilt management, setup port forwarding
+k8s_resource('nginx-deployment', port_forwards=['3000:80', '9113'])
