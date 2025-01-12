@@ -1,0 +1,20 @@
+load('ext://namespace', 'namespace_create', 'namespace_inject')
+load('ext://helm_resource', 'helm_resource', 'helm_repo')
+
+namespace_create('prometheus')
+
+helm_repo('prometheus-community', 'https://prometheus-community.github.io/helm-charts')
+helm_resource('prometheus', 'prometheus-community/prometheus', resource_deps=['prometheus-community'], namespace='prometheus')
+
+k8s_resource('prometheus', port_forwards='9090:9090')
+
+namespace_create('keda')
+
+helm_repo('kedacore', 'https://kedacore.github.io/charts')
+helm_resource('keda', 'kedacore/keda', resource_deps=['kedacore'], namespace='keda')
+
+namespace_create('nginx')
+
+k8s_yaml(namespace_inject(kustomize('kustomize'), 'nginx'))
+
+k8s_resource('nginx', port_forwards=['3000:80', '9113'])

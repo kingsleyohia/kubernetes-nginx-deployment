@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  namespace: nginx
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+        component: web
+        environment: development
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.26.2
+        ports:
+        - containerPort: 80
+        volumeMounts:  # Mounting the ConfigMap to the nginx conf file
+        - name: config-volume
+          mountPath: /etc/nginx/conf.d/custom-server-config.conf
+          subPath: custom-server-config.conf
+          readOnly: true
+        resources:
+          requests:
+            cpu: "250m"
+            memory: "64Mi"
+          limits:
+            cpu: "500m"
+            memory: "128Mi"
+      - name: nginx-exporter
+        image: nginx/nginx-prometheus-exporter:1.4.1
+        ports:
+        - containerPort: 9113
+        args: ["--nginx.scrape-uri=http://127.0.0.1/stub_status"]
+      volumes:  # volume for the ConfigMap
+      - name: config-volume
+        configMap:
+          name: nginx-additional-config  # ConfigMap name
+# mapping executed on terminal below
+# kubectl create configmap nginx-config --from-file=nginx.conf=/Users/kingsley/Documents/infrastructure-test/02/kustomize/custom-nginx.conf -n nginx  
