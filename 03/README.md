@@ -1,4 +1,4 @@
-## Exercise 02 - Scale Your Deployment with KEDA
+## Exercise 03 - Scale Your Deployment with KEDA
 
 In this exercise, you will configure your NGINX deployment to automatically scale based on the metrics you've exposed. You will accomplish this using KEDA (Kubernetes Event-Driven Autoscaling).
 
