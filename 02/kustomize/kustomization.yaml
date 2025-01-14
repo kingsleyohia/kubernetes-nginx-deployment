@@ -5,3 +5,10 @@ resources:
   - nginx-service.yaml
   - prometheus-deployment.yaml
   - prometheus-service.yaml
+  - prometheus-configmap.yaml
+  - prometheus-sa.yaml
+  - nginx-configmap.yaml
+#configMapGenerator:
+#  - name: prometheus-config
+#    files:
+#      - prometheus.yml

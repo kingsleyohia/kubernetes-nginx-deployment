@@ -2,17 +2,27 @@ apiVersion: v1
 kind: Service
 metadata:
   name: nginx-service
-  namespace: nginx 
+  namespace: nginx-deployment
 spec:
   selector:
     app: nginx
   ports:
-  - name: http
-    protocol: TCP
-    port: 80
-    targetPort: 80
-  - name: metrics
-    protocol: TCP
-    port: 9113
-    targetPort: 9113
-  type: LoadBalancer
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: ClusterIP
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-exporter-service
+  namespace: nginx-deployment
+spec:
+  selector:
+    app: nginx
+  ports:
+    - protocol: TCP
+      port: 9113
+      targetPort: 9113
+  type: ClusterIP

@@ -1,8 +1,8 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: prometheus-deployment
-  namespace: prometheus
+  name: prometheus
+  namespace: nginx-deployment
 spec:
   replicas: 1
   selector:
@@ -13,22 +13,16 @@ spec:
       labels:
         app: prometheus
     spec:
+      serviceAccountName: prometheus
       containers:
-      - name: prometheus
-        image: prom/prometheus:v3.1.0
-        ports:
-        - containerPort: 9090
-        volumeMounts:
-        - name: config-volume
-          mountPath: /etc/prometheus/
-          readOnly: true
-
-      - name: debug
-        image: curlimages/curl:latest
-        command: ["sleep"]
-        args: ["infinity"]
-
+        - name: prometheus
+          image: prom/prometheus:latest
+          args:
+            - "--config.file=/etc/prometheus/prometheus.yml"
+          volumeMounts:
+            - name: prometheus-config-volume
+              mountPath: /etc/prometheus/
       volumes:
-      - name: config-volume
-        configMap:
-          name: prometheus-config
+        - name: prometheus-config-volume
+          configMap:
+            name: prometheus-config
