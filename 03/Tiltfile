@@ -1,20 +1,30 @@
+# Load extensions
 load('ext://namespace', 'namespace_create', 'namespace_inject')
 load('ext://helm_resource', 'helm_resource', 'helm_repo')
 
-namespace_create('prometheus')
+# Creating nginx-deployment namespace if it doesn't exist. Switched to 1 namespace for debugging and will expand to 2 to have prometheus on a separate namespace.
+namespace_create('nginx-deployment')
+namespace_create('keda') 
 
-helm_repo('prometheus-community', 'https://prometheus-community.github.io/helm-charts')
-helm_resource('prometheus', 'prometheus-community/prometheus', resource_deps=['prometheus-community'], namespace='prometheus')
+# Manage Prometheus with Helm inside the nginx-deployment namespace
+#helm_repo('prometheus-community', 'https://prometheus-community.github.io/helm-charts')
+#helm_resource('prometheus-helm', 'prometheus-community/prometheus', resource_deps=['prometheus-community'], namespace='nginx-deployment')
 
-k8s_resource('prometheus', port_forwards='9090:9090')
-
-namespace_create('keda')
-
+# Installing KEDA in our setup
 helm_repo('kedacore', 'https://kedacore.github.io/charts')
 helm_resource('keda', 'kedacore/keda', resource_deps=['kedacore'], namespace='keda')
 
-namespace_create('nginx')
+# Invoke kustomize build
+def kustomize_build(directory):
+    return local('kustomize build ' + directory)
 
-k8s_yaml(namespace_inject(kustomize('kustomize'), 'nginx'))
+# Applying kustomized YAML by building it first and then injecting the namespace
+k8s_yaml(namespace_inject(kustomize_build('./kustomize'), 'nginx-deployment'))
 
-k8s_resource('nginx', port_forwards=['3000:80', '9113'])
+# Resources definition and their specific settings
+k8s_resource('nginx-deployment', port_forwards=['3000:80', '9113:9113'])
+
+# Port forward for Prometheus managed by Helm, specifying unique resource name prometheus-helm.
+# Uncomment the 'Manage Prometheus' lines if you want to gather metrics from other sources outside nginx. Otherwise, use 'prometheus'
+#k8s_resource('prometheus-helm', port_forwards='9090:9090')
+k8s_resource('prometheus', port_forwards='9090:9090')
