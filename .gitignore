@@ -9,3 +9,9 @@
 
 # Ignore temporary files
 *.tmp
+
+#Ignore .terraform folder
+.terraform/*
+**/.terraform/*
+**/.terraform/**
+04/terraform04/.terraform/providers/*
